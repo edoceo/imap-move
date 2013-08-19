@@ -141,6 +141,9 @@ class IMAP
         case 'imap-tls':
             $this->_c_host.= '/tls';
             break;
+        case 'imap-novalidate-cert':
+            $this->_c_host.= '/novalidate-cert';
+            break;
         default:
         }
         $this->_c_host.= '}';
