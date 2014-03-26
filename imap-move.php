@@ -198,6 +198,7 @@ class IMAP
         // $opts = '\\Draft'; // And Others?
         // $opts = null;
         // exit;
+        if (empty($mail)) $mail = '<empty msg>'; // some IMAP servers will fatally fail if the msg is empty
         $ret = imap_append($this->_c,$stat['check_path'],$mail,$opts,$date);
         if ($buf = imap_errors()) {
             die(print_r($buf,true));
