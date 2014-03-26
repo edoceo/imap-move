@@ -71,7 +71,8 @@ foreach ($src_path_list as $path) {
     $tgt_mail_list = array();
     for ($i=1;$i<=$tgt_path_stat['mail_count'];$i++) {
         $mail = $T->mailStat($i);
-        $tgt_mail_list[ $mail['message_id'] ] = !empty($mail['subject']) ? $mail['subject'] : "[ No Subject ] Message $i";
+        if (array_key_exists('message_id', $mail))
+          $tgt_mail_list[ $mail['message_id'] ] = !empty($mail['subject']) ? $mail['subject'] : "[ No Subject ] Message $i";
     }
 
     // print_r($tgt_mail_list);
@@ -85,7 +86,7 @@ foreach ($src_path_list as $path) {
         if (empty($stat['subject'])) $stat['subject'] = "[ No Subject ] Message $src_idx";
         // print_r($stat['message_id']); exit;
 
-        if (array_key_exists($stat['message_id'],$tgt_mail_list)) {
+        if (array_key_exists('message_id', $stat) && array_key_exists($stat['message_id'],$tgt_mail_list)) {
             echo "S:$src_idx Mail: {$stat['subject']} Copied Already\n";
             $S->mailWipe($i);
             continue;
