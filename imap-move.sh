@@ -11,7 +11,12 @@ t_host="imap.gmail.com:993"
 s="imap-ssl://${s_user}:${s_pass}@${s_host}/"
 t="imap-ssl://${t_user}:${t_pass}@${t_host}/"
 
-# Move Mailbox to Mailbox
+# Examples - comment out those not used
+
+# Copy Mailbox to Mailbox - trial run
+php ./imap-move.php --fake --source $s --target $t
+
+# Move Mailbox to Mailbox - WARNING: removes mail from old box
 php ./imap-move.php --wipe --source $s --target $t
 
 # Move Mailbox to Subfolder
