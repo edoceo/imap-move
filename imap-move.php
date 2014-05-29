@@ -240,7 +240,7 @@ class IMAP
         }
 
         $buf = implode(', ',$buf);
-        if (preg_match('/NONEXISTENT/',$buf)) {
+        if (preg_match('/NONEXISTENT/',$buf) || preg_match('/Mailbox doesn\'t exist/',$buf)) {
             // Likley Couldn't Open on Gmail Side, So Create
             $ret = imap_createmailbox($this->_c,$p);
             $buf = imap_errors();
