@@ -21,18 +21,22 @@ Run Like:
     --fake to just list what would be copied
     --wipe to remove messages after they are copied (move)
     --copy to store copies of the messages in a path
+    --novalidate to skip validation of SSL certificates
 
 */
 
 error_reporting(E_ALL | E_STRICT);
 
 _args($argc,$argv);
+$novalidate = isset($_ENV['novalidate']) && $_ENV['novalidate'];
 
 echo "Connecting Source...\n";
-$S = new IMAP($_ENV['src']);
+$S = new IMAP($_ENV['src'],$novalidate);
+$S->is_connected() || die('Could not connect to source server');
 
 echo "Connecting Target...\n";
-$T = new IMAP($_ENV['tgt']);
+$T = new IMAP($_ENV['tgt'],$novalidate);
+$T->is_connected() || die('Could not connect to target server');
 //$tgt_path_list = $T->listPath();
 //print_r($tgt_path_list);
 
@@ -127,7 +131,7 @@ class IMAP
     /**
         Connect to an IMAP
     */
-    function __construct($uri)
+    function __construct($uri,$novalidate)
     {
         $this->_c = null;
         $this->_c_host = sprintf('{%s',$uri['host']);
@@ -137,6 +141,9 @@ class IMAP
         switch (strtolower(@$uri['scheme'])) {
         case 'imap-ssl':
             $this->_c_host.= '/ssl';
+			if($novalidate) {
+				$this->_c_host .= '/novalidate-cert';
+			}
             break;
         case 'imap-tls':
             $this->_c_host.= '/tls';
@@ -157,6 +164,15 @@ class IMAP
         $this->_c = imap_open($this->_c_host,$uri['user'],$uri['pass']);
         // echo implode(', ',imap_errors());
     }
+
+	/**
+	* Checks if there is a working connection
+	* If imap_open returns a bool(False) instead of a resource, it failed
+	*/
+	function is_connected()
+	{
+		return is_resource($this->_c);
+	}
 
     /**
         List folders matching pattern
@@ -240,7 +256,7 @@ class IMAP
         }
 
         $buf = implode(', ',$buf);
-        if (preg_match('/NONEXISTENT/',$buf)) {
+        if (preg_match('/NONEXISTENT/',$buf) || preg_match('/SELECT failed/',$buf)) {
             // Likley Couldn't Open on Gmail Side, So Create
             $ret = imap_createmailbox($this->_c,$p);
             $buf = imap_errors();
@@ -315,6 +331,9 @@ function _args($argc,$argv)
                 }
                 $i++;
             }
+            break;
+        case '--novalidate':
+            $_ENV['novalidate'] = true;
             break;
         case '--fake':
             $_ENV['fake'] = true;
